@@ -1,0 +1,159 @@
+Webbasierte Offene Zeugnispflege
+
+------------------------1 Grundsätzliches:
+- möglichst wenig Tools.
+Soll es ein Iserv Modul sein?
+- Alle (legalen) Änderungen werden direkt per Ajax eingetragen, wenn es eine nicht gesicherte Änderung gibt, ist die Kopfzeile rot? (nicht legal: Eine kommentarpflichtige Note ohne Kommentar)
+
+-----------------------------------1.1 Funktionalität:
+A) Synchronisation Stammdaten mit Sibank (was ist möglich?)
+B) Synchronisation Gruppenzugehörigkeit mit Sibank (was ist möglich?)
+B1) Konsistenzprüfung nötig: Hat jede SoS genau die Fächer, die nötig sind?
+C) Synchronisation Schüler mit Sibank/Iserv (Achtung! Bekannte Probleme)
+D) Noteneingabe (Fach-)Lehrer:
+D1) Zeugnisnoten  ---- Kommunikation! (4- mit Bemerkung oder nicht?)
+D2) andere Noten (optional, aber warum nicht? Nicht viel Mehraufwand)
+E) Noteneingabe
+E1) Eingabe Fachlehrer
+E2) Prüfung Klassenleitung
+E3) Fehlzeiten/Dienste/AV/SV
+E4) AGs  (Unabhängig von Noten?)
+F) Administrative Eingaben
+F1) Klassenleitung (Sekretariat)
+F2) Fächerzuteilung (Jg→Fächer, Möglichkeit neue Fächer anzulegen, Sekretariat)
+F3) Statusänderung Klassen (Admin→Fachlehrer→KL→Konferenz)
+F3) Zeugnisausgabedatum, Konferenzdatum, etc.
+F4) Pflege der Textbausteine (Genitiv/Feldzugriff bedenken! Syntaxanalyse!)
+F5) Pflege der Druckmodelle (In welcher Form sollen sie gespeichert werden?)
+F6) Pflege der Ausgabemasken (Zeugniskonferenz/ZK-Druck/Klassenleitungsübersicht etc.)
+F7) Rechteverwaltung (über iserv-Accounts)
+G) Druck
+G1) Massendruck/Einzeldruck/Pdf-Archiv.
+G2) Übersicht der Hotkeys
+
+-----------------------------------1.2 Abbildung des Workflows (Meilensteine?)
+-28d: Prüfung auf Konsistenz ( → Mail an Klassenleitung bei Fail?)
+-14d:
+
+Wann welche Synchronisation?
+
+------------------------2 Daten: Import (Sibank/Iserv)
+- Analyse, welche Export-Daten sind bei Sibank möglich?
+- wollen wir iserv Gruppenzugehörigkeiten nutzen (ich bin dafür!)
+
+------------------------3 Datenhaltung: 
+-----------------------------------3.1 ER-Modell
+Design in Lucid.app → Collaboration
+https://lucid.app/lucidchart/20f5b9b7-091a-4a8e-ab5e-b59fe5a80371/edit?page=0_0#
+
+-----------------------------------3.2 technische Umsetzung
+MySQL? Wie kann man die Daten verschlüsselt speichern? Wo den Schlüssel? Wie ein Kompromittierung des Schlüssels verhindern? Ist eine Verschlüsselung der DB nötig/hilfreich/vermeidbar?
+
+------------------------4 Frontend: Javascript(alternativlos)
+weitere Tools? Processing?
+
+Modern (Ajax) vs klassisch (sehr alt, eher nicht)
+Wenn Ajax, dann secure, etwa https://www.codeproject.com/Articles/1121259/How-to-make-secure-AJAX-call
+
+------------------------5 Backend:
+Technisch: PHP
+PDF-Generierung, wie? → Abhängigkeit von einer Bibliothek. 
+https://peterdev.pl/2019/01/11/picking-a-php-tool-to-generate-pdfs/
+https://ourcodeworld.com/articles/read/226/top-5-best-open-source-pdf-generation-libraries-for-php
+https://peterdev.pl/2019/01/25/picking-a-php-tool-to-read-and-manipulate-pdf-files/
+Hosting: Iserv oder eigener Server (wohl eher letzteres). 
+
+--------------------------------------------------------Details-------------------------------------------------------------------
+------------------------1 ER-Modell
+-----------------------------------1.1 Schuljahr
+Jahr (2021/2022)
+Halbjahr (1/2)
+
+-----------------------------------1.2 Schueler
+Name/Vorname/Geburtsort/Geburtstag (Stammdaten, Druck)
+Rufname (evtl. nötig?)
+Soll man Geschlecht übernehmen (wegen der Texte?)
+Lerngruppe (FK)
+
+-----------------------------------1.3 Lehrer
+Kürzel, Name
+Anrede(FK)
+
+-----------------------------------1.4 Note
+Hier werden die Noten eingetragen (alles über FK)
+Schuljahr/Fach/Schueler (FK) Verweise klar.
+NotenID(FK)→ die tatsächliche Note[z.B. 4-, 2-3, ++, von Drop-Downliste, mit Zusatzinfos.
+NotenklasseID(FK)→ kein schöner Name, gedacht: wenn ein Satz Noten gebraucht wird, wird eine neue „Notenklasse“ angelegt, also z.B. Klausur, mdl. Noten, Zeugnisnoten etc.
+KommentarID(FK)→ (Drop-Down)
+
+-----------------------------------1.5 Kommentar
+Drop-Downliste, z.B. „Zeugnis: schwach ausreichend“, „Zeugnis: schriftlich ungenügend“, oder auch „Zeugnis: kein Eintrag“ (bei einer 4- muss das gefüllt sein).
+Freitext möglich, die Eingabe über Freitext hat Dropdown=0
+Dropdown (0:false, 1:true) zeigt an, ob ein Kommentar aus der Dropdownliste ist.
+
+-----------------------------------1.6 Lerngruppe
+Name (10a)
+Dat_reg (reguläres Zeugnisausgabedatum)
+Dat_nvers (Zeugnisausgabedatum bei Nichtversetzung)
+Jahrgang (10)
+Schuljahr(FK) [Zuordnung ist gefühlt notwendig]
+
+-----------------------------------1.7 Klassenleitung
+Lehrer/Lerngruppe (FK) Verknüpfung zu allen Klassenleitungen
+
+-----------------------------------1.8 Fach
+Lehrer (FK)
+Faecher (FK)
+Schuljahr (FK)[Fächer werden pro Schuljahr angelegt; evtl. nicht nötig, da die Noten bereits mit den Schuljahren verknüpft sind, aber mein Gefühl ist für dieses Feld.]
+
+-----------------------------------1.9 Faecher
+Name [Name für die Drop-Downliste, z.B. ev. Religion oder WPU mIT]
+Fachtyp(FK)
+
+-----------------------------------1.10 Fachtyp
+Name [Name des Typs, also Religion, WPU, Deutsch]
+Subtyp[Nötig z.B. für Name WPU, dann mIT]
+
+-----------------------------------1.11 Notenklasse
+(optional; Notwendig, wenn verschieden Type von Noten verwaltet werden sollen, mdl. Noten, schriftliche Noten, etc.)
+Kommentar (Freitext zur Beschreibung, z.B. Klausur 1, Projekt 2, mdl. Noten)
+Datum(wann erteilt?)
+Gewicht (integer, falls die aktuelle (Durchschnitts-)Note angezeigt wird; bei 40/60 dann eben 40)
+Zeugnis (Zeugnisnote? 0:false, t:true)
+
+-----------------------------------1.12 Noten
+Text: Anzeigetext
+Kurztext: Tasten für diese Note
+Wert: Berechnungswert für Durchschnittsnote (float!)
+Zwert: Berechnungswert für Durchschnittsnote Zeugnis (0: keine Zeugnisnote, sonst int!)
+Kommentar: Muss diese Note kommentiert werden? ( 0: false, 1:true; z.B. eine 4- verlangt einen Kommentar)
+
+-----------------------------------1.13 Versetzung
+Text: Text für Drop-Down Liste („“, „versetzt“, „nicht versetzt“, „muss Schule verlassen“)
+Versetzung, Verbleib (-1: Null, 0: false, 1:true, also Normal von [-1,-1]→[1,1])
+
+-----------------------------------1.14 Status
+Text (In Vorbereitung/Eingabe Fachlehrer/Prüfung KL/Vor Konferenz/Nach Konferenz/Gedruckt/Archiviert)
+
+-----------------------------------1.15 Zeugnis
+Schuljahr(FK): (in Schuljahr)
+Schüler(FK): (für Schüler)
+Versetzung(FK): (siehe oben)
+Status(FK): (siehe oben)
+
+-----------------------------------1.16 Zeugnisinformation
+Hier werden Entschuldigte Fehltage (im 2. Halbjahr: Die Tage im 2. Halbjahr, das Programm bildet die Summe!), Unentschuldigte Fehltage AV/SV/Ags/Bemerkungen gespeichert. Uns reichen diese, aber wenn wir offen denken, müssen wir hier eine offene Schnittstelle einbauen. Daher auch die Felder Text/Zahl, je nach Typ
+Dann steht in der Druckmaske so etwas wie %%Fehltage und %AV und damit wird die Zahl der Fehltage und der Text des AV ins Zeugnis eingetragen.
+
+-----------------------------------1.17 Informationstyp
+Text des Typs der Zeugnisinformation als Drop-Down-Liste.
+
+-----------------------------------1.18 Anrede
+Drop-Downliste für die Anreden (für Mails).
+
+-----------------------------------1.19 Textbausteine
+Tabelle zur Pflege der Textbausteine; Typ ist AV/SV/AG/Bemerkungen
+
+-----------------------------------1.20 Rollen
+Tabelle zur Pflege der Rollen, wer darf was.
+
