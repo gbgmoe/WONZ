@@ -1,4 +1,4 @@
-Webbasierte Offene Zeugnispflege
+Webbasierte Offene Noten- und Zeugnispflege
 
 ------------------------1 Grundsätzliches:
 - möglichst wenig Tools.
@@ -14,11 +14,12 @@ D) Noteneingabe (Fach-)Lehrer:
 D1) Zeugnisnoten  ---- Kommunikation! (4- mit Bemerkung oder nicht?)
 D2) andere Noten (optional, aber warum nicht? Nicht viel Mehraufwand)
 E) Noteneingabe
-E1) Eingabe Fachlehrer
+E1) Eingabe Fachlehrer (schon in D, spezielle Freigabe für Zeugnisnoten?)
 E2) Prüfung Klassenleitung
 E3) Fehlzeiten/Dienste/AV/SV
 E4) AGs  (Unabhängig von Noten?)
 F) Administrative Eingaben
+F0) Pflege Lehrer/Schüler (in Abhängigkeit der Qualität der Sibank-Synchronisation)
 F1) Klassenleitung (Sekretariat)
 F2) Fächerzuteilung (Jg→Fächer, Möglichkeit neue Fächer anzulegen, Sekretariat)
 F3) Statusänderung Klassen (Admin→Fachlehrer→KL→Konferenz)
@@ -109,6 +110,9 @@ Schuljahr (FK)[Fächer werden pro Schuljahr angelegt; evtl. nicht nötig, da die
 -----------------------------------1.9 Faecher
 Name [Name für die Drop-Downliste, z.B. ev. Religion oder WPU mIT]
 Fachtyp(FK)
+
+-----------------------------------1.9 LehrerFaecher
+Normalisierte n:m-Beziehung Lehrer und Fächer (Vereinfacht Zuordnung über Drop-Down-Menüs, fachfremdes Unterrichten in Konstenzprüfung anzeigen)
 
 -----------------------------------1.10 Fachtyp
 Name [Name des Typs, also Religion, WPU, Deutsch]
